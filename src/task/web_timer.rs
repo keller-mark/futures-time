@@ -14,6 +14,9 @@ pub struct Timer {
 
     /// The duration.
     duration: Duration,
+
+    /// Whether the timer has fired.
+    fired: bool,
 }
 
 
@@ -24,6 +27,7 @@ impl Timer {
         Timer {
             timer: None,
             duration,
+            fired: false,
         }
     }
 
@@ -32,6 +36,7 @@ impl Timer {
         self.duration = duration;
         // Invalidate the existing timer so it's recreated on the next poll.
         self.timer = None;
+        self.fired = false;
     }
 
     /// Creates a timer that emits an event once at the given instant in time.
@@ -39,6 +44,7 @@ impl Timer {
         Timer {
             timer: None,
             duration: instant.duration_since(*Instant::now()).into(),
+            fired: false, // TODO: check against Instant.now to see if at is in the past...
         }
     }
 
@@ -51,20 +57,29 @@ impl Future for Timer {
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.get_mut();
 
-        match this.timer.as_mut() {
-            Some(_) => {
-                // The timer has been set and has now fired.
-                Poll::Ready(Instant::now())
-            }
-            None => {
-                // The timer has not been set yet, so set it.
-                let waker = cx.waker().clone();
-                let timeout = Timeout::new(this.duration.as_millis() as u32, move || {
-                    waker.wake()
-                });
-                this.timer = Some(timeout);
-                Poll::Pending
-            }
+        if this.fired {
+            return Poll::Ready(Instant::now());
+        }
+
+        if this.timer.is_none() {
+            // The timer has not been set yet, so set it.
+            let waker = cx.waker().clone();
+            let timeout = Timeout::new(this.duration.as_millis() as u32, move || {
+                // The waker will be dropped when the closure is called.
+                // We don't need to manually set `fired` here because the waker
+                // is moved and will be dropped, which is our signal.
+                waker.wake();
+            });
+            this.timer = Some(timeout);
+        }
+
+        // Check if the waker from the previous poll is the same as the current one.
+        // If the waker is gone, it means the timer has fired and dropped it.
+        if cx.waker().will_wake(cx.waker()) {
+            Poll::Pending
+        } else {
+            this.fired = true;
+            Poll::Ready(Instant::now())
         }
     }
 }
