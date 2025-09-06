@@ -2,11 +2,15 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use async_io::Timer as AsyncTimer;
 use pin_project_lite::pin_project;
 
 use crate::future::Timer;
 use crate::time::{Duration, Instant};
+
+#[cfg(not(target_arch = "wasm32"))]
+use async_io::Timer as AsyncTimer;
+#[cfg(target_arch = "wasm32")]
+use crate::task::web_timer::Timer as AsyncTimer;
 
 /// Sleeps for the specified amount of time.
 ///
@@ -50,7 +54,7 @@ impl Timer for Sleep {
     /// Resets the timer to be `Instant::now()` + `Duration` into the future.
     fn reset_timer(self: std::pin::Pin<&mut Self>) {
         let mut this = self.project();
-        this.timer.set_after(**this.dur);
+        this.timer.set_after((*this.dur).into());
         *this.completed = false;
     }
 }

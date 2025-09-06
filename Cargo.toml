@@ -17,11 +17,13 @@ authors = [
 
 [dependencies]
 futures-core = "0.3.19"
-async-io = "1.6.0"
 pin-project-lite = "0.2.8"
 async-channel = "1.6.1"
 
-#[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+async-io = "1.6.0"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 web-time = "1.1.0"
 gloo-timers = { version = "0.3" }
 

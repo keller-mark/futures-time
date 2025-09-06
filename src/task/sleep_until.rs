@@ -2,10 +2,14 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use async_io::Timer;
 use pin_project_lite::pin_project;
 
 use crate::time::Instant;
+
+#[cfg(not(target_arch = "wasm32"))]
+use async_io::Timer;
+#[cfg(target_arch = "wasm32")]
+use crate::task::web_timer::Timer;
 
 /// Sleeps until the specified instant.
 pub fn sleep_until(deadline: Instant) -> SleepUntil {
