@@ -1,12 +1,21 @@
 use std::task::{Context, Poll};
 use std::future::{Future};
 use std::pin::{Pin};
+use std::sync::{Arc, Mutex};
 use crate::time::{Duration, Instant};
 
 use gloo_timers::callback::Timeout;
 
 // We need to wrap the gloo_timer in an async_io-compatible Timer
 // Reference: https://github.com/smol-rs/async-io/blob/master/src/lib.rs
+#[derive(Debug)]
+struct TimerState {
+    /// Whether the timer has fired.
+    fired: bool,
+    /// The waker for the task.
+    waker: Option<std::task::Waker>,
+}
+
 #[derive(Debug)]
 pub struct Timer {
     /// The underlying timer.
@@ -15,8 +24,8 @@ pub struct Timer {
     /// The duration.
     duration: Duration,
 
-    /// Whether the timer has fired.
-    fired: bool,
+    /// Shared state between the future and the timer callback.
+    state: Arc<Mutex<TimerState>>,
 }
 
 
@@ -27,7 +36,10 @@ impl Timer {
         Timer {
             timer: None,
             duration,
-            fired: false,
+            state: Arc::new(Mutex::new(TimerState {
+                fired: false,
+                waker: None,
+            })),
         }
     }
 
@@ -36,7 +48,9 @@ impl Timer {
         self.duration = duration;
         // Invalidate the existing timer so it's recreated on the next poll.
         self.timer = None;
-        self.fired = false;
+        let mut state = self.state.lock().unwrap();
+        state.fired = false;
+        state.waker = None;
     }
 
     /// Creates a timer that emits an event once at the given instant in time.
@@ -44,7 +58,10 @@ impl Timer {
         Timer {
             timer: None,
             duration: instant.duration_since(*Instant::now()).into(),
-            fired: false, // TODO: check against Instant.now to see if at is in the past...
+            state: Arc::new(Mutex::new(TimerState {
+                fired: false,
+                waker: None,
+            })), // TODO: check against Instant.now to see if at is in the past...
         }
     }
 
@@ -56,31 +73,28 @@ impl Future for Timer {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.get_mut();
+        let mut state = this.state.lock().unwrap();
 
-        if this.fired {
+        if state.fired {
             return Poll::Ready(Instant::now());
         }
 
         if this.timer.is_none() {
             // The timer has not been set yet, so set it.
-            let waker = cx.waker().clone();
+            let state_clone = this.state.clone();
             let timeout = Timeout::new(this.duration.as_millis() as u32, move || {
-                // The waker will be dropped when the closure is called.
-                // We don't need to manually set `fired` here because the waker
-                // is moved and will be dropped, which is our signal.
-                waker.wake();
+                let mut state = state_clone.lock().unwrap();
+                state.fired = true;
+                if let Some(waker) = state.waker.take() {
+                    waker.wake();
+                }
             });
             this.timer = Some(timeout);
         }
 
-        // Check if the waker from the previous poll is the same as the current one.
-        // If the waker is gone, it means the timer has fired and dropped it.
-        if cx.waker().will_wake(cx.waker()) {
-            Poll::Pending
-        } else {
-            this.fired = true;
-            Poll::Ready(Instant::now())
-        }
+        // Store the waker so the timer can wake the task.
+        state.waker = Some(cx.waker().clone());
+        Poll::Pending
     }
 }
 
