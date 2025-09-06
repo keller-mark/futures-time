@@ -4,6 +4,12 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use super::Duration;
 
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::Instant as StdInstant;
+
+#[cfg(target_arch = "wasm32")]
+use web_time::Instant as StdInstant;
+
 /// A measurement of a monotonically nondecreasing clock. Opaque and useful only
 /// with Duration.
 ///
@@ -11,7 +17,7 @@ use super::Duration;
 /// without coherence issues, just like if we were implementing this in the
 /// stdlib.
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone, Copy)]
-pub struct Instant(pub(crate) std::time::Instant);
+pub struct Instant(pub(crate) StdInstant);
 
 impl Instant {
     /// Returns an instant corresponding to "now".
@@ -25,7 +31,7 @@ impl Instant {
     /// ```
     #[must_use]
     pub fn now() -> Self {
-        std::time::Instant::now().into()
+        StdInstant::now().into()
     }
 }
 
@@ -58,7 +64,7 @@ impl SubAssign<Duration> for Instant {
 }
 
 impl std::ops::Deref for Instant {
-    type Target = std::time::Instant;
+    type Target = StdInstant;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -71,14 +77,14 @@ impl std::ops::DerefMut for Instant {
     }
 }
 
-impl From<std::time::Instant> for Instant {
-    fn from(inner: std::time::Instant) -> Self {
+impl From<StdInstant> for Instant {
+    fn from(inner: StdInstant) -> Self {
         Self(inner)
     }
 }
 
-impl Into<std::time::Instant> for Instant {
-    fn into(self) -> std::time::Instant {
+impl Into<StdInstant> for Instant {
+    fn into(self) -> StdInstant {
         self.0
     }
 }
