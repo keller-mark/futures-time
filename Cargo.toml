@@ -1,6 +1,6 @@
 [package]
 name = "futures-time"
-version = "3.0.0"
+version = "3.0.1"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/yoshuawuyts/futures-time"
 documentation = "https://docs.rs/futures-time"
@@ -21,11 +21,11 @@ pin-project-lite = "0.2.8"
 async-channel = "1.6.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-async-io = "1.6.0"
+async-io = "2.0.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-time = "1.1.0"
 gloo-timers = { version = "0.3" }
 
 [dev-dependencies]
-futures-lite = "1.12.0"
+futures-lite = "2.6.0"
