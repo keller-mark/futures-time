@@ -41,7 +41,7 @@ jobs:
         args: --all
   
   build_web:
-    name: Build and test with "web" feature
+    name: Build with "web" feature
     runs-on: ubuntu-latest
 
     steps:
