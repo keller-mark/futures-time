@@ -6,9 +6,9 @@ use pin_project_lite::pin_project;
 
 use crate::time::Instant;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "web"))]
 use async_io::Timer;
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "web")]
 use crate::task::web_timer::Timer;
 
 /// Sleeps until the specified instant.

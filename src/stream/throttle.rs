@@ -101,7 +101,7 @@ impl<S: Stream, I: Stream> Stream for Throttle<S, I> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "web")))]
 mod test {
     use crate::prelude::*;
     use crate::time::Duration;

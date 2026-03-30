@@ -1,6 +1,6 @@
 //! Types and Traits for working with asynchronous tasks.
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "web")]
 pub mod web_timer;
 
 mod sleep;

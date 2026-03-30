@@ -9,10 +9,10 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 use super::Instant;
 
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "web"))]
 use std::time::Duration as StdDuration;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "web")]
 use web_time::Duration as StdDuration;
 
 /// A Duration type to represent a span of time, typically used for system

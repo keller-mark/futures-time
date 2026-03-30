@@ -4,10 +4,10 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use super::Duration;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "web"))]
 use std::time::Instant as StdInstant;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "web")]
 use web_time::Instant as StdInstant;
 
 /// A measurement of a monotonically nondecreasing clock. Opaque and useful only
