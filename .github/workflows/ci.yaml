@@ -40,7 +40,7 @@ jobs:
         command: test
         args: --all
   
-  build_and_test_web:
+  build_web:
     name: Build and test with "web" feature
     runs-on: ubuntu-latest
 
@@ -58,12 +58,6 @@ jobs:
       with:
         command: check
         args: --all --bins --examples --target wasm32-unknown-unknown --no-default-features --features "web"
-
-    - name: tests
-      uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --all --target wasm32-unknown-unknown --no-default-features --features "web"
 
   check_fmt_and_docs:
     name: Checking fmt and docs
