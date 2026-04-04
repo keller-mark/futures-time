@@ -8,49 +8,48 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 use super::Instant;
 
-
 #[cfg(not(feature = "web"))]
-use std::time::Duration as StdDuration;
+use std::time::Duration as HostDuration;
 
 #[cfg(feature = "web")]
-use web_time::Duration as StdDuration;
+use web_time::Duration as HostDuration;
 
 /// A Duration type to represent a span of time, typically used for system
 /// timeouts.
 ///
-/// This type wraps `StdDuration` so we can implement traits on it
+/// This type wraps `std::time::Duration` so we can implement traits on it
 /// without coherence issues, just like if we were implementing this in the
 /// stdlib.
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone, Copy)]
-pub struct Duration(pub(crate) StdDuration);
+pub struct Duration(pub(crate) HostDuration);
 impl Duration {
     /// Creates a new `Duration` from the specified number of whole seconds and
     /// additional nanoseconds.
     #[must_use]
     #[inline]
     pub fn new(secs: u64, nanos: u32) -> Duration {
-        StdDuration::new(secs, nanos).into()
+        HostDuration::new(secs, nanos).into()
     }
 
     /// Creates a new `Duration` from the specified number of whole seconds.
     #[must_use]
     #[inline]
     pub fn from_secs(secs: u64) -> Duration {
-        StdDuration::from_secs(secs).into()
+        HostDuration::from_secs(secs).into()
     }
 
     /// Creates a new `Duration` from the specified number of milliseconds.
     #[must_use]
     #[inline]
     pub fn from_millis(millis: u64) -> Self {
-        StdDuration::from_millis(millis).into()
+        HostDuration::from_millis(millis).into()
     }
 
     /// Creates a new `Duration` from the specified number of microseconds.
     #[must_use]
     #[inline]
     pub fn from_micros(micros: u64) -> Self {
-        StdDuration::from_micros(micros).into()
+        HostDuration::from_micros(micros).into()
     }
 
     /// Creates a new `Duration` from the specified number of seconds represented
@@ -69,7 +68,7 @@ impl Duration {
     #[must_use]
     #[inline]
     pub fn from_secs_f64(secs: f64) -> Duration {
-        StdDuration::from_secs_f64(secs).into()
+        HostDuration::from_secs_f64(secs).into()
     }
 
     /// Creates a new `Duration` from the specified number of seconds represented
@@ -80,12 +79,12 @@ impl Duration {
     #[must_use]
     #[inline]
     pub fn from_secs_f32(secs: f32) -> Duration {
-        StdDuration::from_secs_f32(secs).into()
+        HostDuration::from_secs_f32(secs).into()
     }
 }
 
 impl std::ops::Deref for Duration {
-    type Target = StdDuration;
+    type Target = HostDuration;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -98,14 +97,14 @@ impl std::ops::DerefMut for Duration {
     }
 }
 
-impl From<StdDuration> for Duration {
-    fn from(inner: StdDuration) -> Self {
+impl From<HostDuration> for Duration {
+    fn from(inner: HostDuration) -> Self {
         Self(inner)
     }
 }
 
-impl Into<StdDuration> for Duration {
-    fn into(self) -> StdDuration {
+impl Into<HostDuration> for Duration {
+    fn into(self) -> HostDuration {
         self.0
     }
 }

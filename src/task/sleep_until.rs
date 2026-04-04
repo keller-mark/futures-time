@@ -6,10 +6,10 @@ use pin_project_lite::pin_project;
 
 use crate::time::Instant;
 
-#[cfg(not(feature = "web"))]
-use async_io::Timer;
 #[cfg(feature = "web")]
 use crate::task::web_timer::Timer;
+#[cfg(not(feature = "web"))]
+use async_io::Timer;
 
 /// Sleeps until the specified instant.
 pub fn sleep_until(deadline: Instant) -> SleepUntil {

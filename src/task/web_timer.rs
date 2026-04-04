@@ -1,8 +1,8 @@
-use std::task::{Context, Poll};
-use std::future::{Future};
-use std::pin::{Pin};
-use std::sync::{Arc, Mutex};
 use crate::time::{Duration, Instant};
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::{Arc, Mutex};
+use std::task::{Context, Poll};
 
 use gloo_timers::callback::Timeout;
 
@@ -28,9 +28,7 @@ pub struct Timer {
     state: Arc<Mutex<TimerState>>,
 }
 
-
 impl Timer {
-
     /// Creates a timer that emits an event once after the given duration of time.
     pub fn after(duration: Duration) -> Timer {
         Timer {
@@ -64,9 +62,7 @@ impl Timer {
             })), // TODO: check against Instant.now to see if at is in the past...
         }
     }
-
 }
-
 
 impl Future for Timer {
     type Output = Instant;

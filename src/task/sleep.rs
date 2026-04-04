@@ -7,10 +7,10 @@ use pin_project_lite::pin_project;
 use crate::future::Timer;
 use crate::time::{Duration, Instant};
 
-#[cfg(not(feature = "web"))]
-use async_io::Timer as AsyncTimer;
 #[cfg(feature = "web")]
 use crate::task::web_timer::Timer as AsyncTimer;
+#[cfg(not(feature = "web"))]
+use async_io::Timer as AsyncTimer;
 
 /// Sleeps for the specified amount of time.
 ///
