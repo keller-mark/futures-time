@@ -39,6 +39,25 @@ jobs:
       with:
         command: test
         args: --all
+  
+  build_web:
+    name: Build with "web" feature
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Install ${{ matrix.rust }}
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: "stable"
+        targets: "wasm32-unknown-unknown"
+
+    - name: check
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --all --bins --examples --target wasm32-unknown-unknown --no-default-features --features "web"
 
   check_fmt_and_docs:
     name: Checking fmt and docs

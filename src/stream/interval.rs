@@ -2,10 +2,14 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use async_io::Timer;
 use futures_core::stream::Stream;
 
 use crate::time::{Duration, Instant};
+
+#[cfg(feature = "web")]
+use crate::task::web_timer::Timer;
+#[cfg(not(feature = "web"))]
+use async_io::Timer;
 
 /// Creates a new stream that yields at a set interval.
 ///

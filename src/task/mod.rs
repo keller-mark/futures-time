@@ -1,5 +1,8 @@
 //! Types and Traits for working with asynchronous tasks.
 
+#[cfg(feature = "web")]
+pub mod web_timer;
+
 mod sleep;
 mod sleep_until;
 
